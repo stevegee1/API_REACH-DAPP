@@ -23,6 +23,27 @@ export const main = Reach.App(() => {
   Alice.publish();
   commit();
   
+  [ isOpen,
+    entries ] =
+    parallelReduce([ true, 0 ])
+    .invariant(entries <= maxEntries)
+    .while(isOpen && entries < maxEntries)
+    .api_(Entrant.join, () => {
+      check(!entrants.member(this))
+      return [ (notify) => {
+        notify(null);
+        const who = this;
+        entrants.insert(who);
+        Creator.interact.seeJoin(who,who);
+        return [ true, entries + 1 ];
+      }];
+    })
+    .timeout(timeOut,() => {
+      Creator.publish()
+      Creator.interact.informTimeout();
+      return [false, entries];
+    });
+
 
 
   exit();
