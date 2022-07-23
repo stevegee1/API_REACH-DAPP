@@ -28,10 +28,6 @@ const newBob=async()=>{
 };
 
 
-
-
-//push the address of each user to my array
-
 console.log('Starting backends...');
  await ctcAlice.p.Alice({
   
@@ -47,5 +43,36 @@ console.log('Starting backends...');
  
   
   });
+  const startJoining = async () => {
+    console.log(`started joining...`);
+    const runEntry = async (who) => {
+      const acc = await stdlib.newTestAccount(startingBalance);
+      acc.setDebugLabel(who);
+      await acc.tokenAccept(JSH);
+      const ctc = acc.contract(backend, ctcCreator.getInfo());
+      try{
+        await ctc.apis.Entrant.join();
+        const [balance , bal_JSH] = await stdlib.balancesOf(acc,[null, JSH]);
+        console.log(`${who} joined the whitelist with  ${fmt(balance)} network tokens and ${bal_JSH} non-network tokens`);
+        if (whitelisted.length <= maxEntries) {
+          whitelisted.push([who, acc , ctc]);
+          console.log(whitelisted.length); 
+        } 
+      } catch(e) {
+        console.log(e.message)
+      }
+  
+    };
+    
+    await runEntry('Alice');
+    await runEntry('Bob');
+    await runEntry('John');
+    // await runEntry('Jane');
+    // await runEntry('Abe');
+    // await runEntry('Claire');
+    while (! done) {
+      await stdlib.wait(1)
+    }
+  }
 
-console.log('Goodbye, Mr. President and the Senates');
+console.log('Goodbye, Alice and the Bobs');
